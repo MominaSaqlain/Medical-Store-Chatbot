@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Medical Chatbot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 80vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .chat-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .chat-header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .ai-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .user-message {
+            justify-content: flex-end;
+        }
+        
+        .bot-message {
+            justify-content: flex-start;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .user-message .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message .message-content {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        
+        .bot-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .chat-form {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 50px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+        
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            width: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .suggestions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .suggestion-btn {
+            background: #f1f3f9;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 90vh;
+                border-radius: 15px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .suggestions {
+                gap: 8px;
+            }
+            
+            .suggestion-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="ai-badge">AI Powered</div>
+            <h1>🩺 Medical Store Assistant</h1>
+            <p>Your personal AI medical consultant</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Bot welcome message -->
+            <div class="message bot-message">
+                <div class="bot-icon">🤖</div>
+                <div class="message-content">
+                    <strong>Hello! I'm Dr. MedBot, your AI Medical Assistant</strong><br><br>
+                    I can help you with:<br>
+                    • 🤒 Medicine recommendations for symptoms<br>
+                    • 🏥 Basic health advice and guidance<br>
+                    • 💊 Dosage information and precautions<br>
+                    • ⚠️ Common side effects awareness<br><br>
+                    <small>Try quick suggestions below 👇</small>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+            
+            {% if user_input %}
+                <!-- User message -->
+                <div class="message user-message">
+                    <div class="message-content">
+                        {{ user_input }}
+                        <div class="message-time">User</div>
+                    </div>
+                    <div class="user-icon">👤</div>
+                </div>
+                
+                <!-- Bot response -->
+                <div class="message bot-message">
+                    <div class="bot-icon">🤖</div>
+                    <div class="message-content">
+                        {{ response|safe }}
+                        <div class="message-time">Medical Bot</div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="chat-input-container">
+            <form method="post" class="chat-form" id="chatForm">
+                {% csrf_token %}
+                <input type="text" name="message" class="chat-input" 
+                       placeholder="Ask about medicines, symptoms, or medical advice..." required
+                       autocomplete="off" id="messageInput">
+                <button type="submit" class="send-btn">➤</button>
+            </form>
+            
+            <div class="suggestions">
+                <button type="button" class="suggestion-btn" onclick="setMessage('Medicine for fever')">🤒 Fever</button>
+                <button type="button" class="suggestion-btn" onclick="setMessage('Medicine for headache')">🤕 Headache</button>
+                <button type="button" class="suggestion-btn" onclick="setMessage('Medicine for cold')">🤧 Cold</button>
+                <button type="button" class="suggestion-btn" onclick="setMessage('Medicine for body pain')">😣 Body Pain</button>
+                <button type="button" class="suggestion-btn" onclick="setMessage('Medicine for acidity')">🔥 Acidity</button>
+                <button type="button" class="suggestion-btn" onclick="setMessage('Medical advice')">🩺 Medical Advice</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function setMessage(text) {
+            document.getElementById('messageInput').value = text;
+            document.getElementById('messageInput').focus();
+        }
+        
+        // Scroll to bottom of chat
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Auto-scroll when page loads
+        window.onload = scrollToBottom;
+        
+        // Show typing indicator
+        function showTyping() {
+            // Create typing indicator
+            const typingHTML = `
+                <div class="message bot-message" id="typingIndicator">
+                    <div class="bot-icon">🤖</div>
+                    <div class="message-content">
+                        <div class="typing-dots">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                        <div class="message-time">AI is thinking...</div>
+                    </div>
+                </div>
+            `;
+            
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.insertAdjacentHTML('beforeend', typingHTML);
+            scrollToBottom();
+            
+            // Auto-remove after 1.5 seconds
+            setTimeout(() => {
+                const indicator = document.getElementById('typingIndicator');
+                if (indicator) indicator.remove();
+            }, 1500);
+        }
+        
+        // Clear input field after submit
+        document.getElementById('chatForm').addEventListener('submit', function() {
+            showTyping();
+            
+            // Clear input immediately (user already sees their message in chat)
+            document.getElementById('messageInput').value = '';
+        });
+        
+        // Auto-focus input field
+        document.getElementById('messageInput').focus();
+        
+        // Send message on Enter key
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('chatForm').submit();
+            }
+        });
+    </script>
+</body>
+</html>
